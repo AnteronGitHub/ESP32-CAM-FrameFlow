@@ -1,6 +1,7 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 #include "esp_transport_tcp.h"
+#include <stdio.h>
 
 #include "camera_pins.h"
 #include "frame_flow.c"
@@ -59,6 +60,7 @@ void setup() {
 
   // Stream video
   camera_fb_t* fb;
+  char* read_buffer = (char*) malloc(4);
   while (true) {
     int64_t fr_start = esp_timer_get_time();
 
@@ -76,8 +78,11 @@ void setup() {
     }
 
     esp_camera_fb_return(fb);
+
+    frame_flow_server_feedback_t feedback = recv_feedback(transport, read_buffer);
+    printf("%d\n", feedback.roi_x);
+
     int64_t ms_elapsed = (esp_timer_get_time() - fr_start) / 1000;
-    Serial.println(ms_elapsed);
   }
 
   disconnect_from_server(transport);

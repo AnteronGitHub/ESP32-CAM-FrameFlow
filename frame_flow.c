@@ -1,6 +1,10 @@
 #include "esp_camera.h"
 #include "esp_transport_tcp.h"
 
+typedef struct frame_flow_server_feedback {
+  unsigned int roi_x;    // Region of Interest x index
+} frame_flow_server_feedback_t;
+
 /**
  * @brief      Connect to a server and return the transport object.
  *
@@ -48,4 +52,11 @@ int send_frame(esp_transport_handle_t t, camera_fb_t* fb) {
   }
 
   return 0;
+}
+
+frame_flow_server_feedback_t recv_feedback(esp_transport_handle_t t, char* rx_buffer) {
+  esp_transport_read(t, rx_buffer, 4, 1000);
+  unsigned int number = *(unsigned int *) rx_buffer;
+  frame_flow_server_feedback_t feedback = { .roi_x = number };
+  return feedback;
 }
